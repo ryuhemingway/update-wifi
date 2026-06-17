@@ -1,5 +1,7 @@
 # Update Wi-Fi
 
+I made this because I was tired of only getting to use cafe wifi or public wifi for 30-60 minutes and then getting booted off unless I paid. With this program, just install and type in "update wifi". It will reset your wifi by toggling your MacOS private wifi setting on and off, forcing a new wifi address. Thats it, enjoy!
+
 `update wifi` is a small macOS terminal shortcut for legitimate Wi-Fi troubleshooting. It opens System Settings directly to Wi-Fi and refreshes the Wi-Fi radio so you can quickly review per-network privacy settings, captive-portal issues, or a flaky public hotspot connection.
 
 It does not hack networks, bypass payment gates, or override venue rules. Use it only on networks you own or are authorized to use.
