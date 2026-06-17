@@ -71,6 +71,5 @@ The installer adds:
 
 ## Public Visibility
 
-This repository can be public, but it is not open source. No license is granted
-to copy, modify, redistribute, sublicense, or sell this code unless the owner
-adds a license later.
+This repository is public. No license is granted
+to copy, modify, redistribute, sublicense, or sell this code unless added later.
