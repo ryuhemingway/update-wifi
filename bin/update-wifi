@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME="Update Wi-Fi"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  update-wifi [--no-cycle] [--help]
+
+Opens macOS Wi-Fi settings and optionally refreshes the Wi-Fi radio.
+
+Options:
+  --no-cycle   Open Wi-Fi settings without turning the Wi-Fi radio off/on.
+  --help       Show this help.
+
+Notes:
+  This tool is for legitimate troubleshooting and privacy maintenance on
+  networks you own or are authorized to use. It is not intended to evade
+  venue limits, payment gates, or terms of service.
+USAGE
+}
+
+cycle_radio=true
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-cycle)
+      cycle_radio=false
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "$APP_NAME: unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+wifi_device() {
+  networksetup -listallhardwareports 2>/dev/null | awk '
+    /Hardware Port: Wi-Fi|Hardware Port: AirPort/ { found=1; next }
+    found && /Device:/ { print $2; exit }
+  '
+}
+
+open_wifi_settings() {
+  open "x-apple.systempreferences:com.apple.Wi-Fi-Settings.extension" 2>/dev/null \
+    || open "x-apple.systempreferences:com.apple.preference.network" 2>/dev/null \
+    || open -b com.apple.systempreferences
+}
+
+device="$(wifi_device || true)"
+
+echo "Opening Wi-Fi settings..."
+open_wifi_settings
+
+if [[ "$cycle_radio" == true ]]; then
+  if [[ -z "$device" ]]; then
+    echo "Could not find the Wi-Fi device. Settings is open so you can refresh manually."
+    exit 0
+  fi
+
+  echo "Refreshing Wi-Fi radio on $device..."
+  networksetup -setairportpower "$device" off
+  sleep 2
+  networksetup -setairportpower "$device" on
+fi
+
+cat <<'NEXT'
+
+Next steps:
+  1. Select your Wi-Fi network in System Settings.
+  2. Open Details or the more-options button next to the network.
+  3. Review Private Wi-Fi Address for that network.
+
+Only change network identity settings where you are authorized to do so.
+NEXT
