@@ -67,6 +67,8 @@ The installer adds:
 - `~/.local/bin/update-wifi`
 - a zsh function so the two-word command `update wifi` works
 
-## License
+## Public Visibility
 
-MIT
+This repository can be public, but it is not open source. No license is granted
+to copy, modify, redistribute, sublicense, or sell this code unless the owner
+adds a license later.
