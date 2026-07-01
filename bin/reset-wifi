@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME="reset-wifi"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  reset-wifi [--delay SECONDS] [--open-settings] [--quiet] [--no-cycle] [--help]
+
+Refreshes the macOS Wi-Fi radio from the terminal.
+
+Options:
+  --delay SECONDS   Wait this many seconds before turning Wi-Fi back on. Default: 2.
+  --open-settings   Open macOS Wi-Fi settings after refreshing the radio.
+  --quiet           Suppress normal terminal output.
+  --no-cycle        Do not turn the Wi-Fi radio off/on.
+  --help            Show this help.
+
+Notes:
+  This tool is for legitimate troubleshooting and privacy maintenance on
+  networks you own or are authorized to use. It is not intended to evade
+  venue limits, payment gates, or terms of service.
+USAGE
+}
+
+cycle_radio=true
+open_settings=false
+quiet=false
+delay_seconds=2
+
+log() {
+  if [[ "$quiet" == false ]]; then
+    printf '%s\n' "$*"
+  fi
+}
+
+die() {
+  printf '%s: %s\n' "$APP_NAME" "$*" >&2
+  exit 1
+}
+
+is_non_negative_integer() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --delay)
+      if [[ -z "${2:-}" ]]; then
+        die "--delay requires a number of seconds."
+      fi
+      if ! is_non_negative_integer "$2"; then
+        die "--delay must be a non-negative whole number of seconds."
+      fi
+      delay_seconds="$2"
+      shift 2
+      ;;
+    --open-settings)
+      open_settings=true
+      shift
+      ;;
+    --quiet)
+      quiet=true
+      shift
+      ;;
+    --no-cycle)
+      cycle_radio=false
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      printf '%s: unknown option: %s\n' "$APP_NAME" "$1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+wifi_device() {
+  networksetup -listallhardwareports 2>/dev/null | awk '
+    /Hardware Port: Wi-Fi|Hardware Port: AirPort/ { found=1; next }
+    found && /Device:/ { print $2; exit }
+  '
+}
+
+require_networksetup() {
+  if ! command -v networksetup >/dev/null 2>&1; then
+    die "networksetup is not available. This tool only works on macOS."
+  fi
+}
+
+open_wifi_settings() {
+  if ! command -v open >/dev/null 2>&1; then
+    die "open is not available, so Wi-Fi settings cannot be launched."
+  fi
+
+  open "x-apple.systempreferences:com.apple.Wi-Fi-Settings.extension" 2>/dev/null \
+    || open "x-apple.systempreferences:com.apple.preference.network" 2>/dev/null \
+    || open -b com.apple.systempreferences \
+    || die "could not open Wi-Fi settings."
+}
+
+if [[ "$cycle_radio" == true ]]; then
+  require_networksetup
+  device="$(wifi_device)"
+
+  if [[ -z "$device" ]]; then
+    die "could not find a Wi-Fi hardware device. Check System Settings > Network or run networksetup -listallhardwareports."
+  fi
+
+  log "Refreshing Wi-Fi radio on $device..."
+  if ! networksetup -setairportpower "$device" off; then
+    die "could not turn Wi-Fi off on $device. Check macOS permissions or try running from Terminal."
+  fi
+  sleep "$delay_seconds"
+  if ! networksetup -setairportpower "$device" on; then
+    die "could not turn Wi-Fi back on on $device. Open System Settings > Wi-Fi and turn it on manually."
+  fi
+  log "Wi-Fi radio refreshed."
+fi
+
+if [[ "$open_settings" == true ]]; then
+  log "Opening Wi-Fi settings..."
+  open_wifi_settings
+fi

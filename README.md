@@ -1,20 +1,18 @@
-# Update Wi-Fi
+# reset-wifi
 
-I made this because I was tired of only getting to use cafe wifi or public wifi for 30-60 minutes and then getting booted off unless I paid. With this program, just install and type in "update wifi". It will reset your wifi by toggling your MacOS private wifi setting on and off, forcing a new wifi address. Thats it, enjoy!
+I made this because I was tired of only getting to use cafe wifi or public wifi for 30-60 minutes and then getting booted off unless I paid. With this program, just install and type in `reset wifi`. It will reset your wifi by toggling your MacOS private wifi setting on and off, forcing a new wifi address. That's it, enjoy!
 
-`update wifi` is a small macOS terminal shortcut for legitimate Wi-Fi troubleshooting. It opens System Settings directly to Wi-Fi and refreshes the Wi-Fi radio so you can quickly review per-network privacy settings, captive-portal issues, or a flaky public hotspot connection.
+`reset-wifi` is a small macOS terminal command for legitimate Wi-Fi troubleshooting. It refreshes the Wi-Fi radio without opening any windows, helping with captive-portal issues or flaky public hotspot connections.
 
 It does not hack networks, bypass payment gates, or override venue rules. Use it only on networks you own or are authorized to use.
-
-![Terminal usage](docs/screenshots/terminal.svg)
 
 ## Install
 
 Clone the repo and run the installer:
 
 ```sh
-git clone https://github.com/YOUR-USERNAME/update-wifi.git
-cd update-wifi
+git clone https://github.com/YOUR-USERNAME/reset-wifi.git
+cd reset-wifi
 ./install.sh
 source ~/.zshrc
 ```
@@ -22,25 +20,42 @@ source ~/.zshrc
 Then run:
 
 ```sh
-update wifi
+reset wifi
 ```
 
-To open Wi-Fi settings without cycling the radio:
+To change how long Wi-Fi stays off before being turned back on:
 
 ```sh
-update wifi --no-cycle
+reset wifi --delay 3
+```
+
+To suppress normal terminal output:
+
+```sh
+reset wifi --quiet
+```
+
+To also open Wi-Fi settings after refreshing the radio:
+
+```sh
+reset wifi --open-settings
+```
+
+To run the command without cycling the radio:
+
+```sh
+reset wifi --no-cycle
 ```
 
 ## What It Does
 
-When you run `update wifi`, the helper:
+When you run `reset-wifi`, the helper:
 
-1. Opens **System Settings > Wi-Fi**.
-2. Finds your Mac's Wi-Fi hardware device.
-3. Turns the Wi-Fi radio off, waits briefly, then turns it back on.
-4. Prints the manual next steps for reviewing **Details > Private Wi-Fi Address** for the selected network.
+1. Finds your Mac's Wi-Fi hardware device.
+2. Turns the Wi-Fi radio off, waits briefly, then turns it back on.
+3. Exits without opening System Settings or any other popup window.
 
-![Wi-Fi settings guide](docs/screenshots/wifi-settings.svg)
+If you run `reset-wifi --open-settings`, it also opens **System Settings > Wi-Fi** after the refresh.
 
 macOS manages Private Wi-Fi Address per network. This tool intentionally leaves that choice in System Settings so you can make an informed change for the network you are actually using.
 
@@ -60,14 +75,15 @@ This project is for privacy maintenance and troubleshooting. Do not use it to ev
 Run the script directly from the repo:
 
 ```sh
-./bin/update-wifi --help
-./bin/update-wifi --no-cycle
+./bin/reset-wifi --help
+./bin/reset-wifi --delay 3 --quiet --no-cycle
 ```
 
 The installer adds:
 
-- `~/.local/bin/update-wifi`
-- a zsh function so the two-word command `update wifi` works
+- `~/.local/bin/reset-wifi`
+
+The installer also removes the old `~/.local/bin/update-wifi` binary and old `update wifi` zsh shortcut block if they exist.
 
 ## Public Visibility
 
